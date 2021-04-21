@@ -6,7 +6,7 @@ n_cells <- 1000000 # In theory, we'd want the number of T cells in a mouse but a
 n_SLO <- 400
 n_chemotaxis <- 5 # number of SLOs affected by chemotaxis
 n_count_SLOs_as_hits <- 1 # how many SLOs do we want to see as "seen" ? 5? 1?
-weight_chemotaxis <- 0.1 # number between 0 and 1 that ascribes the amount of probability to be placed on the SLOs
+weight_chemotaxis <- 4 # number greater than 1 that ascribes the additional amount of probability to be placed on the SLOs
 non_chemotaxis_SLOs <- n_SLO-n_chemotaxis
 n_rounds <- 16 # One round = 12 hours; so n_rounds/2 is number of days
 
@@ -23,8 +23,14 @@ for(i in 1:n_rounds){
   
   # assign a SLO for each cell under a model accounting for chemotaxis variation
   
-  prob_vec_scenario2 <- c(rep(weight_chemotaxis/n_chemotaxis, n_chemotaxis), 
-                rep((1-weight_chemotaxis)/(non_chemotaxis_SLOs), non_chemotaxis_SLOs))
+  # In an old version, I use the total weight_chemotaxis to represent how much to use
+  # e.g. 10% of total probability 
+  #prob_vec_scenario2 <- c(rep(weight_chemotaxis/n_chemotaxis, n_chemotaxis), 
+  #              rep((1-weight_chemotaxis)/(non_chemotaxis_SLOs), non_chemotaxis_SLOs))
+  
+  p_nu <- 1/(weight_chemotaxis*n_chemotaxis + 1*(n_SLO-n_chemotaxis))
+  prob_vec_scenario2 <- c(rep(p_nu*weight_chemotaxis, n_chemotaxis),
+                          rep(p_nu, n_SLO-n_chemotaxis))
   slo_assign_scenario2 <- sample(1:n_SLO, size = n_cells, replace = TRUE, prob = prob_vec_scenario2 )
   
   if(i > 1){
